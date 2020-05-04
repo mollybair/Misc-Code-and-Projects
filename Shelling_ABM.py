@@ -75,13 +75,27 @@ class Agent():
         #this should return a boolean for whether or not an agent is happy at a location
         #if loc is False, use current location, else use specified location
         #for reporting purposes, allow checking of the current number of similar neighbors
-
         #if an agent is in a patch with no neighbors at all, treat it as unhappy
-        #if len(neighbor_kinds) == 0:
-        #    return False
-        pass
-        #     neighbors = self.locate_neighbors(location)
-    
+        neighbors = self.world.locate_neighbors(self.location)
+        if len(neighbors) == 0:
+            return False
+        red_neighbors = 0
+        blue_neighbors = 0
+        for neighbor in neighbors:
+            if neighbor.kind == 'red':
+                red_neighbors += 1
+            else:
+                blue_neighbors += 1
+        if self.kind == 'red':
+            if (red_neighbors / (red_neighbors + blue_neighbors))*100 >= self.same_pref:
+                return True
+            else:
+                return False
+        else:
+            if (blue_neighbors / (red_neighbors + blue_neighbors))*100 >= self.same_pref:
+                return True
+            else:
+                return False
     
     def start_happy_r_b(self):
     #for reporting purposes, allow count of happy before any moves, of red and blue seperately
