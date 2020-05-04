@@ -81,11 +81,16 @@ class Agent():
             return False
         red_neighbors = 0
         blue_neighbors = 0
+            
         for neighbor in neighbors:
-            if neighbor.kind == 'red':
+            for agent in world.agents:
+                if agent.location == neighbor:
+                    current_neighbor = agent
+            if current_neighbor.kind == 'red':
                 red_neighbors += 1
             else:
                 blue_neighbors += 1
+                
         if self.kind == 'red':
             if (red_neighbors / (red_neighbors + blue_neighbors))*100 >= self.same_pref:
                 return True
