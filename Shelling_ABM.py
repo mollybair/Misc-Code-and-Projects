@@ -76,31 +76,37 @@ class Agent():
         #if loc is False, use current location, else use specified location
         #for reporting purposes, allow checking of the current number of similar neighbors
         #if an agent is in a patch with no neighbors at all, treat it as unhappy
-        neighbors = self.world.locate_neighbors(self.location)
-        if len(neighbors) == 0:
-            return False
-        red_neighbors = 0
-        blue_neighbors = 0
-            
-        for neighbor in neighbors:
-            for agent in world.agents:
-                if agent.location == neighbor:
-                    current_neighbor = agent
-            if current_neighbor.kind == 'red':
-                red_neighbors += 1
-            else:
-                blue_neighbors += 1
-                
-        if self.kind == 'red':
-            if (red_neighbors / (red_neighbors + blue_neighbors))*100 >= self.same_pref:
-                return True
-            else:
-                return False
+        
+        # get list of coordinates of each neighbor
+        if loc == False:
+            neighbor_spaces = world.locate_neighbors(self.location)
         else:
-            if (blue_neighbors / (red_neighbors + blue_neighbors))*100 >= self.same_pref:
-                return True
-            else:
-                return False
+            neighbor_spaces = world.locate_neighbors(loc)
+        
+        # refine list of neighbor spaces to only include those filled by an agent
+        def find_occupied_neigbors():
+            pass
+        
+        # translate list of neighbor spaces from coordinates to kind of neigbor
+        def find_neighbor_kind():
+            pass
+        
+        # sum red and blue neighbors
+        def sum_neighbor_kind(occupied_neighbors):
+            red_neighbors = 0
+            blue_neighbors = 0
+            for neighbor in occupied_neighbors:
+                if neighbor == 'red':
+                    red_neighbors += 1
+                else:
+                    blue_neighbors += 1
+        
+        # calculate proportion of same kind neighbors
+        def same_neighbors():
+            pass
+        
+        
+        pass
     
     def start_happy_r_b(self):
     #for reporting purposes, allow count of happy before any moves, of red and blue seperately
