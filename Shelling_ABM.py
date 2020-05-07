@@ -120,20 +120,17 @@ class Agent():
         # not happy if all neighbor spaces are empty
         if len(occupied_neighbors) == 0 and neighbor_check == False:
             return False 
-        if len(occupied_neighbors) == 0 and neighbor_check == True:
-            return [False]
         kind_neighbors = find_neighbor_kind(occupied_neighbors)
         same_kind_neighbors = sum_neighbor_kind(kind_neighbors)
         proportion_same = same_neighbors(same_kind_neighbors)
         
         if proportion_same >= self.same_pref and neighbor_check == False:
             return True
-        elif proportion_same >= self.same_pref and neighbor_check == True:
-            return [True]
         elif proportion_same < self.same_pref and neighbor_check == False:
             return False
-        elif proportion_same < self.same_pref and neighbor_check == True:
-            return [False]
+        # if neighbor_check = True, return number of same kind neighbors
+        else:
+            return same_kind_neighbors
 
     def start_happy_r_b(self):
     #for reporting purposes, allow count of happy before any moves, of red and blue seperately
@@ -247,19 +244,13 @@ class World():
         diff_neighbours_r = []
         diff_neighbours_b = []
         for agent in self.agents:
-            diff_neighbors.append(sum(
-                    [not a for a in agent.am_i_happy(neighbor_check=True)]
-                                ))
+            diff_neighbors.append(agent.am_i_happy(neighbor_check=True))
         for agent in self.agents:
             if agent.kind == 'red':
-                diff_neighbours_r.append(sum(
-                    [not a for a in agent.am_i_happy(neighbor_check=True)]
-                                ))
+                diff_neighbours_r.append(agent.am_i_happy(neighbor_check=True))
         for agent in self.agents:
             if agent.kind == 'blue':
-                diff_neighbours_b.append(sum(
-                    [not a for a in agent.am_i_happy(neighbor_check=True)]
-                                ))
+                diff_neighbours_b.append(agent.am_i_happy(neighbor_check=True))
                 
 
         self.reports['integration'].append(round(mean(diff_neighbors), 2))
