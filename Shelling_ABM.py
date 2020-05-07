@@ -114,27 +114,25 @@ class Agent():
             # divide by length of neighbor spaces (as opposed to occupied neighbors)
             # because an empty neighbor counts as a 'bad' neighbor
             proportion_same = same_kind_neighbors / len(neighbor_spaces)
-            #print(proportion_same)
             return proportion_same
         
         occupied_neighbors = find_occupied_neighbors(neighbor_spaces)
-        if len(occupied_neighbors) == 0:
-            return False
+        # not happy if all neighbor spaces are empty
+        if len(occupied_neighbors) == 0 and neighbor_check == False:
+            return False 
+        if len(occupied_neighbors) == 0 and neighbor_check == True:
+            return [False]
         kind_neighbors = find_neighbor_kind(occupied_neighbors)
         same_kind_neighbors = sum_neighbor_kind(kind_neighbors)
         proportion_same = same_neighbors(same_kind_neighbors)
         
         if proportion_same >= self.same_pref and neighbor_check == False:
-            #print('1')
             return True
         elif proportion_same >= self.same_pref and neighbor_check == True:
-            #print('1')
             return [True]
         elif proportion_same < self.same_pref and neighbor_check == False:
-            #print('2')
             return False
         elif proportion_same < self.same_pref and neighbor_check == True:
-            #print('2')
             return [False]
 
     def start_happy_r_b(self):
