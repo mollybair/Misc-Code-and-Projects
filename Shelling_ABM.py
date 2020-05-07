@@ -50,26 +50,26 @@ class Agent():
         #return 3  # blue unhappy but did not move
         #return 0 # red happy, did not move
         #return 1 # blue happy, did not move
-        if self.kind == 'red':
-            if self.am_i_happy == True:
+        
+        if self.am_i_happy(loc=False) == True or self.am_i_happy(loc=False) == [True]:
+            if self.kind == 'red':
                 return 0
             else:
-                vacancies = self.world.find_vacant(return_all = True)
-                for vacancy in vacancies:
-                    if self.am_i_happy(loc = vacancy) == True:
-                        self.location = vacancy
-                        return 4
-                return 2
-        else:
-            if self.am_i_happy == True:
                 return 1
-            else:
-                vacancies = self.world.find_vacant(return_all = True)
-                for vacancy in vacancies:
-                    if self.am_i_happy(loc = vacancy) == True:
-                        self.location = vacancy
+            
+        elif self.am_i_happy(loc=False) == False or self.am_i_happy(loc=False) == [False]:
+            vacancies = self.world.find_vacant(return_all = True)
+            for vacancy in vacancies:
+                if self.am_i_happy(vacancy) == True:
+                    self.location = vacancy
+                    if self.kind == 'red':
+                        return 4
+                    else:
                         return 5
-                return 3    
+            if self.kind == 'red':
+                return 2
+            else:
+                return 3
 
     def am_i_happy(self, loc=False, neighbor_check=False):
         #this should return a boolean for whether or not an agent is happy at a location
@@ -79,35 +79,64 @@ class Agent():
         
         # get list of coordinates of each neighbor
         if loc == False:
-            neighbor_spaces = world.locate_neighbors(self.location)
+            neighbor_spaces = self.world.locate_neighbors(self.location)
         else:
-            neighbor_spaces = world.locate_neighbors(loc)
+            neighbor_spaces = self.world.locate_neighbors(loc)
         
         # refine list of neighbor spaces to only include those filled by an agent
-        def find_occupied_neigbors():
-            pass
+        def find_occupied_neighbors(neighbor_spaces):
+            vacancies = self.world.find_vacant(return_all = True)
+            occupied_neighbors = []
+            for neighbor in neighbor_spaces:
+                if neighbor not in vacancies:
+                    occupied_neighbors.append(neighbor)
+            return occupied_neighbors
         
         # translate list of neighbor spaces from coordinates to kind of neigbor
-        def find_neighbor_kind():
-            pass
+        def find_neighbor_kind(occupied_neighbors):
+            kind_neighbors = []
+            for neighbor in occupied_neighbors:
+                for agent in world.agents:
+                    if neighbor == agent.location:
+                        kind_neighbors.append(agent.kind)
+            return kind_neighbors
         
         # sum red and blue neighbors
-        def sum_neighbor_kind(occupied_neighbors):
-            red_neighbors = 0
-            blue_neighbors = 0
-            for neighbor in occupied_neighbors:
-                if neighbor == 'red':
-                    red_neighbors += 1
-                else:
-                    blue_neighbors += 1
+        def sum_neighbor_kind(kind_neighbors):
+            same_kind_neighbors = 0
+            for neighbor in kind_neighbors:
+                if neighbor == self.kind:
+                    same_kind_neighbors += 1
+            return same_kind_neighbors
         
         # calculate proportion of same kind neighbors
-        def same_neighbors():
-            pass
+        def same_neighbors(same_kind_neighbors):
+            # divide by length of neighbor spaces (as opposed to occupied neighbors)
+            # because an empty neighbor counts as a 'bad' neighbor
+            proportion_same = same_kind_neighbors / len(neighbor_spaces)
+            #print(proportion_same)
+            return proportion_same
         
+        occupied_neighbors = find_occupied_neighbors(neighbor_spaces)
+        if len(occupied_neighbors) == 0:
+            return False
+        kind_neighbors = find_neighbor_kind(occupied_neighbors)
+        same_kind_neighbors = sum_neighbor_kind(kind_neighbors)
+        proportion_same = same_neighbors(same_kind_neighbors)
         
-        pass
-    
+        if proportion_same >= self.same_pref and neighbor_check == False:
+            #print('1')
+            return True
+        elif proportion_same >= self.same_pref and neighbor_check == True:
+            #print('1')
+            return [True]
+        elif proportion_same < self.same_pref and neighbor_check == False:
+            #print('2')
+            return False
+        elif proportion_same < self.same_pref and neighbor_check == True:
+            #print('2')
+            return [False]
+
     def start_happy_r_b(self):
     #for reporting purposes, allow count of happy before any moves, of red and blue seperately
         if self.am_i_happy and self.kind == 'red':
