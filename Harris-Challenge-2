@@ -1,0 +1,33 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jun  4 13:41:32 2020
+
+@author: mollybair
+"""
+from pandas_datareader import wb 
+import pandas_datareader.data as web
+import datetime
+
+## get data from World Bank
+# https://pandas-datareader.readthedocs.io/en/latest/remote_data.html#world-bank
+fertility_rate_id = 'SP.DYN.TFRT.IN'
+labor_force_female = 'SL.TLF.TOTL.FE.ZS' ## percentage of labor force that is female
+lfpr_female = 'SL.TLF.CACT.FE.ZS' ## labor force participation rate of females
+ids = [fertility_rate_id, labor_force_female, lfpr_female]
+
+country = ['US']
+
+df_wb = wb.download(indicator = ids, country = country, start = 2000, end = 2020)
+
+## get data from FRED
+# https://pandas-datareader.readthedocs.io/en/latest/remote_data.html#fred
+start = datetime.datetime(2000, 1, 1)
+end = datetime.datetime(2020, 5, 31)
+lfpr_african_american = 'LNS11300006'
+lfpr_white = 'LNS11300003'
+lfpr_latino = 'LNS11300009'
+cols = [lfpr_african_american, lfpr_white, lfpr_latino]
+df_fred = web.DataReader(cols, 'fred', start, end)
+
+## add country col to fred data to prepare for merge
