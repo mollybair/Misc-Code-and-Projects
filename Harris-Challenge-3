@@ -5,29 +5,99 @@ Created on Thu Jun  4 13:41:32 2020
 
 @author: mollybair
 """
+import pandas as pd
 from pandas_datareader import wb 
 import pandas_datareader.data as web
 import datetime
+import matplotlib.pyplot as plt
 
 ## get data from World Bank
 # https://pandas-datareader.readthedocs.io/en/latest/remote_data.html#world-bank
-fertility_rate_id = 'SP.DYN.TFRT.IN'
-labor_force_female = 'SL.TLF.TOTL.FE.ZS' ## percentage of labor force that is female
-lfpr_female = 'SL.TLF.CACT.FE.ZS' ## labor force participation rate of females
-ids = [fertility_rate_id, labor_force_female, lfpr_female]
 
-country = ['US']
-
-df_wb = wb.download(indicator = ids, country = country, start = 2000, end = 2020)
+def get_wb_data(ids, country, start, end):        
+    df_wb = wb.download(indicator = ids, country = country, start = start, end = end)
+    return df_wb
 
 ## get data from FRED
 # https://pandas-datareader.readthedocs.io/en/latest/remote_data.html#fred
-start = datetime.datetime(2000, 1, 1)
-end = datetime.datetime(2020, 5, 31)
-lfpr_african_american = 'LNS11300006'
-lfpr_white = 'LNS11300003'
-lfpr_latino = 'LNS11300009'
-cols = [lfpr_african_american, lfpr_white, lfpr_latino]
-df_fred = web.DataReader(cols, 'fred', start, end)
+def get_fred_data(start, end, cols):
+    df_fred = web.DataReader(cols, 'fred', start, end)
+    return df_fred
 
-## add country col to fred data to prepare for merge
+## rename variables for clarity
+# https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.rename.html
+def rename(df, names):
+    df.rename(columns = names, inplace = True)
+    return df
+
+## merge datasets
+def merge(df1, df2, by, method):
+    merged = df1.merge(df2, on = by, how = method)
+    return merged
+
+## concatenate datasets
+def concatenate(dfs):
+    df = pd.concat(dfs)
+    return df
+
+def plot(ylabel, xlabel, title, save_as):
+    fig, ax = plt.subplots()
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel)
+    ax.set_title(title)
+    plot.savefig(save_as)
+    
+    
+    # df_concat.set_index('DATE', inplace = True)
+    # df_concat.groupby('REGION')['UR'].plot(legend = True)
+    # ax.set_ylabel('Unemployment Rate')
+    # ax.set_xlabel('Date')
+    # ax.set_title('Unemployment Rate By Region')
+    # plt.savefig('ur_by_region.jpeg')
+    pass
+
+def main():
+    ## get World Bank data and rename variables; convert year to datetime
+    ids = ['SP.DYN.TFRT.IN', 'SL.TLF.TOTL.FE.ZS', 'SL.TLF.CACT.FE.ZS', 'SL.TLF.CACT.MA.ZS']
+    country = ['US']
+    start = 2000
+    end = 2020
+    df_wb = get_wb_data(ids, country, start, end)
+    df_wb = rename(df_wb, {'SP.DYN.TFRT.IN': 'fertility_rate', 'SL.TLF.TOTL.FE.ZS': 'labor_force_female',\
+             'SL.TLF.CACT.FE.ZS': 'lfpr_female', 'SL.TLF.CACT.MA.ZS': 'lfpr_male'})
+
+    df_wb = df_wb.reset_index()
+    df_wb.drop(columns = ['country'], inplace = True)
+
+    ## get FRED data, add country column, rename variables
+    start = datetime.datetime(2000, 1, 1)
+    end = datetime.datetime(2020, 5, 31)
+    cols = ['LNS11300006', 'LNS11300003', 'LNS11300009']
+    df_fred = get_fred_data(start, end, cols)
+    df_fred = rename(df_fred, {'LNS11300006': 'lfpr_black', 'LNS11300003': 'lfpr_white', \
+                               'LNS11300009': 'lfpr_latino'})
+    df_fred = df_fred.reset_index()
+    
+    ## change FRED date to year 
+    year_dict = {}
+    for value in df_fred['DATE']:
+        year_dict[value] = str(value.year)
+    
+    df_fred_2 = df_fred
+    year = df_fred['DATE'].map(year_dict)
+    df_fred_2['DATE'] = year
+    df_fred_2 = rename(df_fred_2, {'DATE': 'year'})
+    
+    
+    ## group fred data by year
+    fred_grouped = df_fred.groupby('year').mean()
+    
+    ## merge World Bank and FRED data
+    df = merge(df_wb, fred_grouped, 'year', 'outer')
+    print(df.head())
+     
+
+
+
+
+
