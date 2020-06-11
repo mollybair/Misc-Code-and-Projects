@@ -40,21 +40,44 @@ def concatenate(dfs):
     df = pd.concat(dfs)
     return df
 
-def plot(ylabel, xlabel, title, save_as):
+def single_scatter_plot(df, x, y, xlabel, ylabel, title, save_as):
     fig, ax = plt.subplots()
+    ax.scatter(df[x], df[y], color = 'purple')
+    ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
+    ax.set_title(title)
+    
+    plt.xticks(rotation = 45)
+    plt.show()
+    plt.savefig(save_as)
+    
+def double_scatter_plot(df, x, y1, y2, xlabel, y1label, y2label, title, save_as):
+    fig, ax = plt.subplots()
+    ax.scatter(df[x], df[y1], color = 'blue', label = y1label)
+    ax.scatter(df[x], df[y2], color = 'green', label = y2label)
     ax.set_xlabel(xlabel)
     ax.set_title(title)
-    plot.savefig(save_as)
     
+    plt.xticks(rotation = 45)
+    plt.legend()
+    plt.show()
+    plt.savefig(save_as)
     
-    # df_concat.set_index('DATE', inplace = True)
-    # df_concat.groupby('REGION')['UR'].plot(legend = True)
-    # ax.set_ylabel('Unemployment Rate')
-    # ax.set_xlabel('Date')
-    # ax.set_title('Unemployment Rate By Region')
-    # plt.savefig('ur_by_region.jpeg')
-    pass
+def triple_scatter_plot(df, x, y1, y2, y3, xlabel, y1label, y2label, y3label, title, save_as):
+    fig, ax = plt.subplots()
+    ax.scatter(df[x], df[y1], color = 'blue', label = y1label)
+    ax.scatter(df[x], df[y2], color = 'red', label = y2label)
+    ax.scatter(df[x], df[y3], color = 'orange', label = y3label)
+    ax.set_xlabel(xlabel)
+    ax.set_title(title)
+    
+    plt.xticks(rotation = 45)
+    plt.legend()
+    plt.show()
+    plt.savefig(save_as)
+    
+# https://stackoverflow.com/questions/44863375/how-to-change-spacing-between-ticks-in-matplotlib 
+# https://stackoverflow.com/questions/4270301/matplotlib-multiple-datasets-on-the-same-scatter-plot
 
 def main():
     ## get World Bank data and rename variables; convert year to datetime
@@ -65,7 +88,6 @@ def main():
     df_wb = get_wb_data(ids, country, start, end)
     df_wb = rename(df_wb, {'SP.DYN.TFRT.IN': 'fertility_rate', 'SL.TLF.TOTL.FE.ZS': 'labor_force_female',\
              'SL.TLF.CACT.FE.ZS': 'lfpr_female', 'SL.TLF.CACT.MA.ZS': 'lfpr_male'})
-
     df_wb = df_wb.reset_index()
     df_wb.drop(columns = ['country'], inplace = True)
 
@@ -88,16 +110,26 @@ def main():
     df_fred_2['DATE'] = year
     df_fred_2 = rename(df_fred_2, {'DATE': 'year'})
     
-    
     ## group fred data by year
     fred_grouped = df_fred.groupby('year').mean()
     
     ## merge World Bank and FRED data
     df = merge(df_wb, fred_grouped, 'year', 'outer')
     print(df.head())
+    
+    print(single_scatter_plot(df, 'year', 'fertility_rate', 'Year', 'Fertility Rate',\
+                              'U.S. Fertility Rate 2000 - 2020', 'fr_year.jpeg'))
+    
+    print(double_scatter_plot(df, 'year', 'lfpr_male', 'lfpr_female', 'Year', \
+                       'Male Labor Force Participation Rate', 'Female Labor Force Participation Rate',\
+                       'U.S. Labor Force Participation Rate by Sex 2000 - 2020', 'lfpr_gender_year.jpeg'))
      
 
-
+    print(triple_scatter_plot(df, 'year', 'lfpr_black', 'lfpr_white', 'lfpr_latino','Year', \
+                              'Black Labor Force Participation Rate',\
+                                  'White Labor Force Participation Rate', 'Latinx Labor Force Participation Rate',\
+                                      'U.S. Labor Force Participation Rate by Race 2000 - 2020',\
+                                          'lfpr_race.jpeg'))
 
 
 
